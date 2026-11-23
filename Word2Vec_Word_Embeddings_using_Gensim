@@ -1,0 +1,115 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPewVH6bTAdkln1w9SP36WE",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/AbhayChauhan-2/NLP-Practicals/blob/main/Word2Vec_Word_Embeddings_using_Gensim\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TLVB4_L04UUL",
+        "outputId": "86dbff8a-ba80-485b-b7c7-1fdc73a41959"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Downloading text8 dataset manually...\n",
+            "Extracting text8 dataset...\n",
+            "Extraction complete!\n",
+            "Loading dataset corpus...\n",
+            "Training Word2Vec model...\n",
+            "Model trained and saved successfully!\n",
+            "\n",
+            "Words most similar to 'king':\n",
+            "  prince: 0.7535\n",
+            "  regent: 0.7151\n",
+            "  emperor: 0.7102\n",
+            "  elector: 0.7072\n",
+            "  throne: 0.7001\n"
+          ]
+        }
+      ],
+      "source": [
+        "\n",
+        "\n",
+        "!pip install -q --upgrade gensim\n",
+        "\n",
+        "import urllib.request\n",
+        "import zipfile\n",
+        "import os\n",
+        "from gensim.models import Word2Vec\n",
+        "from gensim.models.word2vec import Text8Corpus\n",
+        "\n",
+        "# Manually download and extract the text8 dataset to bypass gensim's buggy downloader\n",
+        "dataset_url = \"http://mattmahoney.net/dc/text8.zip\"\n",
+        "zip_path = \"text8.zip\"\n",
+        "corpus_path = \"text8\"\n",
+        "\n",
+        "if not os.path.exists(corpus_path):\n",
+        "    print(\"Downloading text8 dataset manually...\")\n",
+        "    urllib.request.urlretrieve(dataset_url, zip_path)\n",
+        "    print(\"Extracting text8 dataset...\")\n",
+        "    with zipfile.ZipFile(zip_path, 'r') as zip_ref:\n",
+        "        zip_ref.extractall()\n",
+        "    print(\"Extraction complete!\")\n",
+        "\n",
+        "# Load dataset using Gensim's native Text8Corpus class\n",
+        "print(\"Loading dataset corpus...\")\n",
+        "dataset = Text8Corpus(corpus_path)\n",
+        "\n",
+        "# Train a basic Word2Vec model\n",
+        "print(\"Training Word2Vec model...\")\n",
+        "model = Word2Vec(sentences=dataset, vector_size=100, window=5, min_count=150, workers=4)\n",
+        "\n",
+        "# Save the model\n",
+        "model.save(\"word2vec_text8.model\")\n",
+        "print(\"Model trained and saved successfully!\")\n",
+        "\n",
+        "# Demonstrate basic operations\n",
+        "word_to_test = \"king\"\n",
+        "if word_to_test in model.wv:\n",
+        "    print(f\"\\nWords most similar to '{word_to_test}':\")\n",
+        "    similar_words = model.wv.most_similar(word_to_test, topn=5)\n",
+        "    for word, similarity in similar_words:\n",
+        "        print(f\"  {word}: {similarity:.4f}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "5RdU3r5m4jeg"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
