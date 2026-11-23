@@ -1,0 +1,178 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOpRuz52qc1A/qwqWzry7Hs",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/AbhayChauhan-2/NLP-Practicals/blob/main/GloVe_Embeddings_Loading_and_Vector_Representation\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "ShVU9JWuyKSe"
+      },
+      "outputs": [],
+      "source": [
+        "\n",
+        "!pip install gensim\n",
+        "\n",
+        "import gensim.downloader as api\n",
+        "import numpy as np\n",
+        "\n",
+        "# Load pre-trained GloVe embeddings (100 dimensions)\n",
+        "# This might take a minute to download on the first run\n",
+        "print(\"Loading GloVe embeddings...\")\n",
+        "glove_vectors = api.load(\"glove-wiki-gigaword-100\")\n",
+        "print(\"Embeddings loaded successfully!\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import sys\n",
+        "import subprocess\n",
+        "\n",
+        "# Ensure gensim is installed\n",
+        "try:\n",
+        "    import gensim\n",
+        "except ImportError:\n",
+        "    print(\"gensim package not found. Installing gensim...\")\n",
+        "    subprocess.check_call([sys.executable, \"-m\", \"pip\", \"install\", \"gensim\"])\n",
+        "    import gensim\n",
+        "\n",
+        "import gensim.downloader as api\n",
+        "\n",
+        "# Fallback: Load glove_vectors if it's not defined\n",
+        "try:\n",
+        "    glove_vectors\n",
+        "except NameError:\n",
+        "    print(\"glove_vectors not found in session memory. Loading GloVe embeddings now...\")\n",
+        "    glove_vectors = api.load(\"glove-wiki-gigaword-100\")\n",
+        "    print(\"Embeddings loaded successfully!\")\n",
+        "\n",
+        "# Get vector for a single word\n",
+        "word = \"coffee\"\n",
+        "vector = glove_vectors[word]\n",
+        "print(f\"Vector for '{word}' (first 10 dimensions):\\n{vector[:10]}\\n\")\n",
+        "\n",
+        "# Find top 5 most similar words\n",
+        "similar_words = glove_vectors.most_similar(word, topn=5)\n",
+        "\n",
+        "print(f\"Words most similar to '{word}':\")\n",
+        "for w, similarity in similar_words:\n",
+        "    print(f\"  {w}: {similarity:.4f}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "LlWXi3f6y5h-",
+        "outputId": "23a96b10-7e11-4509-9bfc-243443c2abce"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "gensim package not found. Installing gensim...\n",
+            "glove_vectors not found in session memory. Loading GloVe embeddings now...\n",
+            "[==================================================] 100.0% 128.1/128.1MB downloaded\n",
+            "Embeddings loaded successfully!\n",
+            "Vector for 'coffee' (first 10 dimensions):\n",
+            "[ 0.12632   0.86414  -0.46052   0.26095   0.077033  0.076186  0.71959\n",
+            "  0.38122  -0.10287  -0.44388 ]\n",
+            "\n",
+            "Words most similar to 'coffee':\n",
+            "  tea: 0.7733\n",
+            "  drinks: 0.7288\n",
+            "  beer: 0.7253\n",
+            "  cocoa: 0.7027\n",
+            "  wine: 0.7003\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "def get_sentence_vector(sentence, model):\n",
+        "    # Tokenize sentence and lowercase\n",
+        "    words = sentence.lower().split()\n",
+        "    # Filter out words that are not in the vocabulary\n",
+        "    valid_vectors = [model[w] for w in words if w in model]\n",
+        "\n",
+        "    if not valid_vectors:\n",
+        "        # Return a zero vector if no words are in vocabulary\n",
+        "        return np.zeros(model.vector_size)\n",
+        "\n",
+        "    # Average the vectors\n",
+        "    return np.mean(valid_vectors, axis=0)\n",
+        "\n",
+        "# Example usage\n",
+        "sentence_1 = \"Data science is exciting\"\n",
+        "sentence_2 = \"Machine learning is fun\"\n",
+        "\n",
+        "vec_1 = get_sentence_vector(sentence_1, glove_vectors)\n",
+        "vec_2 = get_sentence_vector(sentence_2, glove_vectors)\n",
+        "\n",
+        "# Calculate cosine similarity\n",
+        "cosine_similarity = np.dot(vec_1, vec_2) / (np.linalg.norm(vec_1) * np.linalg.norm(vec_2))\n",
+        "print(f\"Sentence 1: '{sentence_1}'\")\n",
+        "print(f\"Sentence 2: '{sentence_2}'\")\n",
+        "print(f\"Cosine Similarity: {cosine_similarity:.4f}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "mkm_DhR3zFZ9",
+        "outputId": "924b15f9-cff0-4e2a-91a2-1974deb151d2"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Sentence 1: 'Data science is exciting'\n",
+            "Sentence 2: 'Machine learning is fun'\n",
+            "Cosine Similarity: 0.8425\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "01eRjwtj0FTM"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
